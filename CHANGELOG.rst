@@ -2,8 +2,8 @@
 Changelog for package message_filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+6.0.7 (2024-11-20)
+------------------
 * Updated Python docs (`#150 <https://github.com/ros2/message_filters/issues/150>`_)
 * Contributors: Alejandro Hernández Cordero
 
