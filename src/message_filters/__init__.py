@@ -323,13 +323,13 @@ class ApproximateTimeSynchronizer(TimeSynchronizer):
 class TimeSequencer(SimpleFilter):
     """
     Sequences messages based on the timestamp of their header.
+
     At construction, the TimeSequencer takes a duration 'delay' which specifies
     how long to queue up messages to provide a time sequencing over them.
-    As messages arrive they are sorted according to their timestamps.
+    As messages arrive, they are sorted according to their timestamps.
     A callback for a message is never invoked until the messages' timestamp is
-    out of date by at least delay.
-    However, for all messages which are out of date by at least delay, their
-    callbacks are invoked and guaranteed to be in temporal order.
+    out of date by at least the delay. However, for all messages which are out of
+    date by at least delay, their callbacks are invoked in temporal order.
     If a message arrives from a time prior to a message which has already had its
     callback invoked, it is thrown away.
     """
@@ -347,17 +347,19 @@ class TimeSequencer(SimpleFilter):
         Construct a TimeSequencer filter for a subscriber.
 
         Args:
-            input_filter (SimpleFilter): The input filter to connect to.
-                Typically a Subscriber.
-            delay (Duration | float): The delay (in seconds) to wait for
-                messages to arrive before dispatching them.
-            update_rate (Duration | float): The rate at which to check for
-                messages that are ready to be dispatched.
-            queue_size (int): The maximum number of messages to store.
-            node (Node): The node to create the timer on.
-            msg_stamp_attr (str, optional): The attribute to use for retrieving
-                timestamp from the message. Should point to a
-                builtin_interfaces.msg.Time field. Defaults to "header.stamp".
+        ----
+        input_filter (SimpleFilter): The input filter to connect to.
+            Typically a Subscriber.
+        delay (Duration | float): The delay (in seconds) to wait for
+            messages to arrive before dispatching them.
+        update_rate (Duration | float): The rate at which to check for
+            messages that are ready to be dispatched.
+        queue_size (int): The maximum number of messages to store.
+        node (Node): The node to create the timer on.
+        msg_stamp_attr (str, optional): The attribute to use for retrieving
+            the timestamp from the message. Should point to a
+            builtin_interfaces.msg.Time field. Defaults to "header.stamp".
+
         """
         super().__init__()
         if not isinstance(delay, Duration):
@@ -410,7 +412,8 @@ class TimeSequencer(SimpleFilter):
         if stamp is not None:
             if not isinstance(stamp, TimeMsg):
                 raise TypeError(
-                    f"Expected {TimeMsg}, got {type(stamp)} in msg attribute {'.'.join(self.msg_stamp_attrs)}"
+                    f"Expected {TimeMsg}, got {type(stamp)} in msg attribute "
+                    f"{'.'.join(self.msg_stamp_attrs)}"
                 )
             stamp = Time.from_msg(stamp)
             return stamp
