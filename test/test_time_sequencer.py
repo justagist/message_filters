@@ -99,7 +99,7 @@ class TestTimeSequencer(unittest.TestCase):
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
             msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
         expected_data = [f"Message {i}" for i in range(5)]
@@ -130,7 +130,7 @@ class TestTimeSequencer(unittest.TestCase):
         for i in random_order:
             stamp = current_time + Duration(seconds=i * 0.1)
             msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
         expected_data = [f"Message {i}" for i in range(5)]
@@ -158,7 +158,7 @@ class TestTimeSequencer(unittest.TestCase):
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
             msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         # Only the last 'queue_size' messages should have been received
         expected_data = [f"Message {i}" for i in range(2, 5)]
@@ -188,7 +188,7 @@ class TestTimeSequencer(unittest.TestCase):
 
         for i in range(5):
             msg = MockHeaderlessMessage(data=f"Message {i}")
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         # The message should not have been received
         received_data = [msg.data for _, msg in sequencer.messages]
@@ -223,7 +223,7 @@ class TestTimeSequencer(unittest.TestCase):
             msg = MockCustomStampMsg(
                 custom_stamp=stamp.to_msg(), data=f"Message {i}"
             )
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
         expected_data = [f"Message {i}" for i in range(5)]
@@ -255,7 +255,7 @@ class TestTimeSequencer(unittest.TestCase):
             msg = MockCustomNestedStampMsg(
                 stamp=stamp.to_msg(), data=f"Message {i}"
             )
-            sequencer.add(msg)
+            sequencer._add(msg)
 
         expected_data = [f"Message {i}" for i in range(5)]
         received_data = [msg.data for _, msg in sequencer.messages]

@@ -354,7 +354,8 @@ class TimeSequencer(SimpleFilter):
             messages to arrive before dispatching them.
         update_rate (Duration | float): The rate at which to check for
             messages that are ready to be dispatched.
-        queue_size (int): The maximum number of messages to store.
+        queue_size (int): The maximum number of messages to store. Set 0
+            for no limit.
         node (Node): The node to create the timer on.
         msg_stamp_attr (str, optional): The attribute to use for retrieving
             the timestamp from the message. Should point to a
@@ -366,22 +367,22 @@ class TimeSequencer(SimpleFilter):
             delay = Duration(seconds=delay)
         if not isinstance(update_rate, Duration):
             update_rate = Duration(seconds=update_rate)
-        self.delay = delay
-        self.update_rate = update_rate
-        self.queue_size = queue_size
+        self.delay: float = delay
+        self.update_rate: float = update_rate
+        self.queue_size: int = queue_size
         self.lock = threading.Lock()
         self.messages = []
-        self.last_time = Time()
-        self.node = node
+        self.last_time: Time = Time()
+        self.node: Node = node
         self.msg_stamp_attrs = msg_stamp_attr.split(".")
         self.update_timer = self.node.create_timer(
-            self.update_rate.nanoseconds / 1e9, self.dispatch
+            self.update_rate.nanoseconds / 1e9, self._dispatch
         )
         self.incoming_connection = None
         if input_filter is not None:
             self.connectInput(input_filter)
 
-    def get_msg_stamp_attr(self, msg):
+    def _getMsgStampAttr(self, msg):
         obj = msg
         for attr in self.msg_stamp_attrs:
             if not hasattr(obj, attr):
@@ -392,11 +393,11 @@ class TimeSequencer(SimpleFilter):
     def connectInput(self, input_filter: SimpleFilter):
         if self.incoming_connection is not None:
             raise RuntimeError("Already connected to an input filter.")
-        self.incoming_connection = input_filter.registerCallback(self.add)
+        self.incoming_connection = input_filter.registerCallback(self._add)
 
-    def add(self, msg):
+    def _add(self, msg):
         with self.lock:
-            stamp = self.get_stamp(msg)
+            stamp = self._getStamp(msg)
             if stamp is None:
                 return
             if stamp.nanoseconds < self.last_time.nanoseconds:
@@ -407,8 +408,8 @@ class TimeSequencer(SimpleFilter):
             if self.queue_size != 0 and len(self.messages) > self.queue_size:
                 del self.messages[0]
 
-    def get_stamp(self, msg):
-        stamp = self.get_msg_stamp_attr(msg)
+    def _getStamp(self, msg):
+        stamp = self._getMsgStampAttr(msg)
         if stamp is not None:
             if not isinstance(stamp, TimeMsg):
                 raise TypeError(
@@ -423,7 +424,7 @@ class TimeSequencer(SimpleFilter):
             )
             return None
 
-    def dispatch(self):
+    def _dispatch(self):
         to_call = []
         with self.lock:
             while self.messages:
@@ -437,3 +438,8 @@ class TimeSequencer(SimpleFilter):
                     break
         for msg in to_call:
             self.signalMessage(msg)
+
+    def shutdown(self):
+        """Clean up the TimeSequencer."""
+        self.update_timer.cancel()
+        self.node.destroy_timer(self.update_timer)
