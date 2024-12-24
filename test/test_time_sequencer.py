@@ -29,15 +29,15 @@
 
 import unittest
 
-import rclpy
 from builtin_interfaces.msg import Time as TimeMsg
-from rclpy.duration import Duration
-
 from message_filters import SimpleFilter, TimeSequencer
+import rclpy
+from rclpy.duration import Duration
 
 
 class MockMsg:
     class MockHeader:
+
         def __init__(self, stamp=None):
             if stamp is None:
                 self.stamp = TimeMsg()
@@ -50,27 +50,31 @@ class MockMsg:
 
 
 class MockCustomStampMsg:
+
     def __init__(self, custom_stamp, data):
         self.custom_stamp = custom_stamp
         self.data = data
 
 
 class MockCustomNestedStampMsg:
+
     def __init__(self, stamp, data):
         self.custom_nested_stamp = MockCustomStampMsg(stamp, data)
         self.data = data
 
 
 class MockHeaderlessMessage:
+
     def __init__(self, data):
         self.data = data
 
 
 class TestTimeSequencer(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         rclpy.init()
-        cls.node = rclpy.create_node("test_time_sequencer_node")
+        cls.node = rclpy.create_node('test_time_sequencer_node')
 
     @classmethod
     def tearDownClass(cls):
@@ -98,14 +102,14 @@ class TestTimeSequencer(unittest.TestCase):
         current_time = self.node.get_clock().now()
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
-            msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
+            msg = MockMsg(stamp=stamp.to_msg(), data=f'Message {i}')
             sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
-        expected_data = [f"Message {i}" for i in range(5)]
+        expected_data = [f'Message {i}' for i in range(5)]
         received_data = [msg.data for _, msg in sequencer.messages]
         self.assertEqual(
-            received_data, expected_data, "Messages were not received in order"
+            received_data, expected_data, 'Messages were not received in order'
         )
 
     def test_time_sequencer_out_of_order(self):
@@ -129,14 +133,14 @@ class TestTimeSequencer(unittest.TestCase):
         random_order = [2, 0, 4, 1, 3]
         for i in random_order:
             stamp = current_time + Duration(seconds=i * 0.1)
-            msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
+            msg = MockMsg(stamp=stamp.to_msg(), data=f'Message {i}')
             sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
-        expected_data = [f"Message {i}" for i in range(5)]
+        expected_data = [f'Message {i}' for i in range(5)]
         received_data = [msg.data for _, msg in sequencer.messages]
         self.assertEqual(
-            received_data, expected_data, "Messages were not received in order"
+            received_data, expected_data, 'Messages were not received in order'
         )
 
     def test_time_sequencer_queue_size(self):
@@ -157,16 +161,16 @@ class TestTimeSequencer(unittest.TestCase):
         # Generate more messages than the queue size
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
-            msg = MockMsg(stamp=stamp.to_msg(), data=f"Message {i}")
+            msg = MockMsg(stamp=stamp.to_msg(), data=f'Message {i}')
             sequencer._add(msg)
 
         # Only the last 'queue_size' messages should have been received
-        expected_data = [f"Message {i}" for i in range(2, 5)]
+        expected_data = [f'Message {i}' for i in range(2, 5)]
         received_data = [msg.data for _, msg in sequencer.messages]
         self.assertEqual(
             received_data,
             expected_data,
-            "Queue size limit not enforced correctly",
+            'Queue size limit not enforced correctly',
         )
 
     def test_time_sequencer_disallow_headerless(self):
@@ -187,7 +191,7 @@ class TestTimeSequencer(unittest.TestCase):
         )
 
         for i in range(5):
-            msg = MockHeaderlessMessage(data=f"Message {i}")
+            msg = MockHeaderlessMessage(data=f'Message {i}')
             sequencer._add(msg)
 
         # The message should not have been received
@@ -195,7 +199,7 @@ class TestTimeSequencer(unittest.TestCase):
         self.assertEqual(
             len(received_data),
             0,
-            "Headerless message was incorrectly processed",
+            'Headerless message was incorrectly processed',
         )
 
     def test_time_sequencer_custom_stamp_attribute(self):
@@ -213,7 +217,7 @@ class TestTimeSequencer(unittest.TestCase):
             update_rate=update_rate,
             queue_size=queue_size,
             node=self.node,
-            msg_stamp_attr="custom_stamp",
+            msg_stamp_attr='custom_stamp',
         )
 
         # Generate messages with increasing timestamps
@@ -221,15 +225,15 @@ class TestTimeSequencer(unittest.TestCase):
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
             msg = MockCustomStampMsg(
-                custom_stamp=stamp.to_msg(), data=f"Message {i}"
+                custom_stamp=stamp.to_msg(), data=f'Message {i}'
             )
             sequencer._add(msg)
 
         # Check that the messages were received in order after the delay
-        expected_data = [f"Message {i}" for i in range(5)]
+        expected_data = [f'Message {i}' for i in range(5)]
         received_data = [msg.data for _, msg in sequencer.messages]
         self.assertEqual(
-            received_data, expected_data, "Messages were not received in order"
+            received_data, expected_data, 'Messages were not received in order'
         )
 
     def test_time_sequencer_custom_nested_stamp_attribute(self):
@@ -246,24 +250,24 @@ class TestTimeSequencer(unittest.TestCase):
             update_rate=update_rate,
             queue_size=queue_size,
             node=self.node,
-            msg_stamp_attr="custom_nested_stamp.custom_stamp",
+            msg_stamp_attr='custom_nested_stamp.custom_stamp',
         )
 
         current_time = self.node.get_clock().now()
         for i in range(5):
             stamp = current_time + Duration(seconds=i * 0.1)
             msg = MockCustomNestedStampMsg(
-                stamp=stamp.to_msg(), data=f"Message {i}"
+                stamp=stamp.to_msg(), data=f'Message {i}'
             )
             sequencer._add(msg)
 
-        expected_data = [f"Message {i}" for i in range(5)]
+        expected_data = [f'Message {i}' for i in range(5)]
         received_data = [msg.data for _, msg in sequencer.messages]
         self.assertEqual(
-            received_data, expected_data, "Messages were not received in order"
+            received_data, expected_data, 'Messages were not received in order'
         )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     suite = unittest.TestSuite()
     unittest.TextTestRunner(verbosity=2).run(suite)

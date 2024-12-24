@@ -29,13 +29,13 @@
 
 """Message Filter Objects."""
 
-import itertools
-import threading
 from bisect import insort_right
 from functools import reduce
+import itertools
+import threading
 
-import rclpy
 from builtin_interfaces.msg import Time as TimeMsg
+import rclpy
 from rclpy.clock import ROSClock
 from rclpy.duration import Duration
 from rclpy.logging import LoggingSeverity
@@ -341,7 +341,7 @@ class TimeSequencer(SimpleFilter):
         update_rate: Duration | float,
         queue_size: int,
         node: Node,
-        msg_stamp_attr: str = "header.stamp",
+        msg_stamp_attr: str = 'header.stamp',
     ):
         """
         Construct a TimeSequencer filter for a subscriber.
@@ -374,7 +374,7 @@ class TimeSequencer(SimpleFilter):
         self.messages = []
         self.last_time: Time = Time()
         self.node: Node = node
-        self.msg_stamp_attrs = msg_stamp_attr.split(".")
+        self.msg_stamp_attrs = msg_stamp_attr.split('.')
         self.update_timer = self.node.create_timer(
             self.update_rate.nanoseconds / 1e9, self._dispatch
         )
@@ -392,7 +392,7 @@ class TimeSequencer(SimpleFilter):
 
     def connectInput(self, input_filter: SimpleFilter):
         if self.incoming_connection is not None:
-            raise RuntimeError("Already connected to an input filter.")
+            raise RuntimeError('Already connected to an input filter.')
         self.incoming_connection = input_filter.registerCallback(self._add)
 
     def _add(self, msg):
@@ -413,14 +413,14 @@ class TimeSequencer(SimpleFilter):
         if stamp is not None:
             if not isinstance(stamp, TimeMsg):
                 raise TypeError(
-                    f"Expected {TimeMsg}, got {type(stamp)} in msg attribute "
+                    f'Expected {TimeMsg}, got {type(stamp)} in msg attribute '
                     f"{'.'.join(self.msg_stamp_attrs)}"
                 )
             stamp = Time.from_msg(stamp)
             return stamp
         else:
             self.node.get_logger().warn(
-                "Cannot use message without timestamp; discarding message."
+                'Cannot use message without timestamp; discarding message.'
             )
             return None
 
